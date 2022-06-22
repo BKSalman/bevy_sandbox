@@ -43,7 +43,7 @@ pub fn load_sprite(
 ) {
     let texture_handle = asset_server.load("sprite_sheet.png");
     let texture_atlas = TextureAtlas::from_grid_with_padding(texture_handle,
-        Vec2::splat(16.0),
+        Vec2::splat(15.0),
         14,
         1,
         Vec2::splat(2.));

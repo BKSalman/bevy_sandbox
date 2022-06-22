@@ -36,8 +36,8 @@ pub fn spawn_letter_blocks(
         let block = spawn_sprite(
             &mut commands,
             &sprite,
-            ArabicLetters::Alif as usize,
-            Vec3::new(rand::thread_rng().gen_range(0.0..1.0) * TILE_SIZE, rand::thread_rng().gen_range(-(1.0 * RESOLUTION)..0.0) * TILE_SIZE, 900.0),
+            rand::thread_rng().gen_range(1..10) as usize, // for testing, use ArabicLetters enum later
+            Vec3::new(rand::thread_rng().gen_range(0.0..0.9), rand::thread_rng().gen_range(-(0.9 * RESOLUTION)..0.0), 900.0),
         );
         
     
