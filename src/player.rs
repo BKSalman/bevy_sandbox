@@ -1,4 +1,6 @@
-use bevy::{prelude::*, sprite::collide_aabb::collide};
+use bevy::{prelude::*,
+    // sprite::collide_aabb::collide,
+    };
 use bevy_rapier2d::{
     prelude::*,
     // rapier::{
@@ -42,7 +44,8 @@ impl Default for Player {
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_player)
-        .add_system(player_movement);
+        .add_system(camera_follow.after("movement"))
+        .add_system(player_movement.label("movement"));
     }
 }
 
@@ -100,16 +103,32 @@ pub fn spawn_player(mut commands: Commands, sprite: Res<SpriteSheet>) {
     commands
         .entity(player)
         .insert(Name::new("Player"))
-        .insert(Player { velocity: 3.0, ..Default::default() })
+        .insert(Player { velocity: 1.0, ..Default::default() })
+        .insert(Transform{
+            translation: Vec3::new(0.1, -0.1, 900.0),
+            ..Default::default()
+        })
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(0.05, 0.05))
         .insert(GravityScale(0.0))
         .insert(LockedAxes::ROTATION_LOCKED)
+        .insert(Ccd::enabled())
         .insert(Velocity {
             linvel: Vec2::new(0.0,0.0),
             ..Default::default()
         });
 
+}
+
+fn camera_follow(
+    player_query: Query<&Transform, With<Player>>,
+    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
+) {
+    let player_transform = player_query.single();
+    let mut camera_transform = camera_query.single_mut();
+
+    camera_transform.translation.x = player_transform.translation.x;
+    camera_transform.translation.y = player_transform.translation.y;
 }
 
 // fn wall_collision_check(

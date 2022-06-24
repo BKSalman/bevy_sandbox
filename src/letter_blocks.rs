@@ -50,13 +50,14 @@ pub fn spawn_letter_blocks(
             .entity(block)
             .insert(Name::new("Letter"))
             .insert(Letter)
-            .insert(RigidBody::Fixed)
+            .insert(RigidBody::Dynamic)
             .insert(Damping{
                 linear_damping:50.0,
                 ..Default::default()
             })
             .insert(LockedAxes::ROTATION_LOCKED)
             .insert(Collider::cuboid(0.05, 0.05))
+            .insert(Ccd::enabled())
             .insert(GravityScale(0.0));
     }
 }

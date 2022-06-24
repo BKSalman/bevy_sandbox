@@ -6,11 +6,13 @@ mod sprite;
 mod player;
 mod debug;
 mod letter_blocks;
+mod tile_map;
 
 use sprite::SpritePlugin;
 use player::PlayerPlugin;
 use debug::DebugPlugin;
 use letter_blocks::LettersPlugin;
+use tile_map::TileMapPlugin;
 
 pub const RESOLUTION: f32 = 16.0 / 9.0;
 pub const TILE_SIZE: f32 = 0.1;
@@ -28,11 +30,12 @@ fn main() {
     })
     .add_plugins(DefaultPlugins)
     .add_plugin(DebugPlugin)
-    .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-    .add_plugin(RapierDebugRenderPlugin::default())
+    .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(0.1))
+    // .add_plugin(RapierDebugRenderPlugin::default())
     .add_plugin(SpritePlugin)
     .add_plugin(PlayerPlugin)
     .add_plugin(LettersPlugin)
+    // .add_plugin(TileMapPlugin)
     .add_startup_system(spawn_camera)
     .run();
 }
