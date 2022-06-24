@@ -1,5 +1,7 @@
 use bevy::{prelude::*, render::camera::ScalingMode, window::PresentMode};
 
+use bevy_rapier2d::prelude::*;
+
 mod sprite;
 mod player;
 mod debug;
@@ -26,6 +28,8 @@ fn main() {
     })
     .add_plugins(DefaultPlugins)
     .add_plugin(DebugPlugin)
+    .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+    .add_plugin(RapierDebugRenderPlugin::default())
     .add_plugin(SpritePlugin)
     .add_plugin(PlayerPlugin)
     .add_plugin(LettersPlugin)

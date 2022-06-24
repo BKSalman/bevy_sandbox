@@ -1,8 +1,10 @@
 use bevy::prelude::*;
-use crate::{sprite::{SpriteSheet, spawn_sprite}, TILE_SIZE, RESOLUTION};
+use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
-#[derive(Component)]
+use crate::{sprite::{SpriteSheet, spawn_sprite}, RESOLUTION};
+
+#[derive(Component, Clone, Copy)]
 pub struct Letter;
 
 pub struct LettersPlugin;
@@ -14,6 +16,7 @@ impl Plugin for LettersPlugin {
     }
 }
 
+#[allow(dead_code)]
 enum ArabicLetters {
     None,
     Alif,
@@ -37,13 +40,23 @@ pub fn spawn_letter_blocks(
             &mut commands,
             &sprite,
             rand::thread_rng().gen_range(1..10) as usize, // for testing, use ArabicLetters enum later
-            Vec3::new(rand::thread_rng().gen_range(0.0..0.9), rand::thread_rng().gen_range(-(0.9 * RESOLUTION)..0.0), 900.0),
+            Vec3::new(
+                rand::thread_rng().gen_range(-(0.9 * RESOLUTION)..(0.9 * RESOLUTION)),
+                rand::thread_rng().gen_range(-0.9..0.9),
+                900.0),
         );
-        
     
         commands
             .entity(block)
             .insert(Name::new("Letter"))
-            .insert(Letter);
+            .insert(Letter)
+            .insert(RigidBody::Fixed)
+            .insert(Damping{
+                linear_damping:50.0,
+                ..Default::default()
+            })
+            .insert(LockedAxes::ROTATION_LOCKED)
+            .insert(Collider::cuboid(0.05, 0.05))
+            .insert(GravityScale(0.0));
     }
 }

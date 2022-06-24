@@ -9,3 +9,7 @@ edition = "2021"
 bevy = "0.7"
 bevy-inspector-egui = "0.11"
 rand = "0.8.5"
+bevy_rapier2d = { version = "0.14.1", features = [ "simd-stable", "debug-render" ] }
+
+# [build]
+# rustc-wrapper = "C:/Users/Salman/.cargo/bin/sccache.exe"
