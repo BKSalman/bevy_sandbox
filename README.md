@@ -5,3 +5,10 @@
 You start by listening to the sound then move the letters to the proper placement in th word
 
 ![gameIdea](https://user-images.githubusercontent.com/85521119/174914611-e362e683-d950-4c0c-9d88-758f8710630c.png)
+
+## Why are you making this project?
+
+this poject is mainly to learn the Rust language
+
+so I decided to make a simple game to have fun while doing it
+
