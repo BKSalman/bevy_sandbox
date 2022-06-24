@@ -1,5 +1,5 @@
-  <head>
     <style>
+<<<<<<< HEAD
       div {
         font-size: 25px;
       }
@@ -7,6 +7,15 @@
         background-color: black;
         color: white;
       }
+=======
+        div {
+            font-size: 25px;
+        }
+        body {
+            background-color: black;
+            color: white;
+        }
+>>>>>>> bba7508e29a0a03dc0819a060433d73d24385981
       canvas {
         background-color: white;
       }
@@ -14,18 +23,14 @@
         color: white;
       }
     </style>
-  </head>
-  <body>
-    <script type="module">
-      import init from './wasm/letters_game.js'
-      await init();
-    </script>
-    <div>
-      WASD or Arrows to move
-    </div>
-    <div>
-      Press Space to spawn a box
-    </div>
-    <!-- <a href="#" onclick="var c = document.getElementsByTagName('canvas'); let x = (c.webkitRequestFullScreen || c.requestFullscreen); x.call(c);">fullscreen</a> -->
-  </body>
-  </html>
+  <script type="module">
+    import init from './wasm/letters_game.js'
+    init()
+  </script>
+  <div>
+    WASD or Arrows to move
+  </div>
+  <div>
+    Press Space to spawn a box
+  </div>
+
