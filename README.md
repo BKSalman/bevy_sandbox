@@ -1,10 +1,6 @@
-# letters_game
+# Letters
 
-## A simple game where the player pushes The arabic letters to the proper sound
-
-You start by listening to the sound then move the letters to the proper placement in th word
-
-![gameIdea](https://user-images.githubusercontent.com/85521119/174914611-e362e683-d950-4c0c-9d88-758f8710630c.png)
+![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/85521119/175750523-4564aca8-c93c-4dd9-9c2d-f60617d0f0a7.gif)
 
 ## Why are you making this project?
 
