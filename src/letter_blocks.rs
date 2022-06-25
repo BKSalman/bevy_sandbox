@@ -41,7 +41,7 @@ pub fn spawn_letter_blocks(
         let block = spawn_sprite(
             &mut commands,
             &sprite,
-            rand::thread_rng().gen_range(1..10) as usize, // for testing, use ArabicLetters enum later
+            rand::thread_rng().gen_range(1..26) as usize, // for testing, use ArabicLetters enum later
             Vec3::new(
                 transform.translation.x + (rand::thread_rng().gen_range(-(0.9 * RESOLUTION)..(0.9 * RESOLUTION))),
                 transform.translation.y + (rand::thread_rng().gen_range(-0.9..0.9)),
