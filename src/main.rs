@@ -23,13 +23,15 @@ fn main() {
     .insert_resource(WindowDescriptor {
         width: height * RESOLUTION,
         height: height,
-        title: "Bevy Tutorial".to_string(),
+        title: "Letters".to_string(),
         present_mode: PresentMode::Fifo,
+        #[cfg(target_arch = "wasm32")]
+        canvas: Some("#bevy-canvas".to_string()),
         resizable: false,
         ..Default::default()
     })
     .add_plugins(DefaultPlugins)
-    .add_plugin(DebugPlugin)
+    // .add_plugin(DebugPlugin)
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(0.1))
     // .add_plugin(RapierDebugRenderPlugin::default())
     .add_plugin(SpritePlugin)
