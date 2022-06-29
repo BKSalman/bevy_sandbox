@@ -4,7 +4,7 @@ use rand::prelude::*;
 
 use crate::{sprite::{SpriteSheet, spawn_sprite}, RESOLUTION, player::Player};
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Clone, Copy, Debug)]
 pub struct Letter;
 
 pub struct LettersPlugin;
@@ -60,6 +60,7 @@ pub fn spawn_letter_blocks(
             .insert(LockedAxes::ROTATION_LOCKED)
             .insert(Collider::cuboid(0.05, 0.05))
             .insert(Ccd::enabled())
+            .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(GravityScale(0.0));
     }
 }

@@ -113,6 +113,9 @@ pub fn spawn_player(mut commands: Commands, sprite: Res<SpriteSheet>) {
         .insert(GravityScale(0.0))
         .insert(LockedAxes::ROTATION_LOCKED)
         .insert(Ccd::enabled())
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Velocity {
             linvel: Vec2::new(0.0,0.0),
             ..Default::default()
