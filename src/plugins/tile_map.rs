@@ -35,23 +35,23 @@ fn create_simple_map(mut commands: Commands, sprite: Res<SpriteSheet>) {
             for (x, char) in line.chars().enumerate() {
                 let position = Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0);
                 if char == '#' {
-                    let tile:Entity = spawn_sprite(
-                        &mut commands,
-                        &sprite,
-                        x+1,
-                        position,
-                    );
-                    commands.entity(tile)
-                    .insert(RigidBody::Fixed)
-                    .insert(LockedAxes::ROTATION_LOCKED);
+                    let tile: Entity = spawn_sprite(&mut commands, &sprite, x + 1, position);
+                    commands
+                        .entity(tile)
+                        .insert(RigidBody::Fixed)
+                        .insert(LockedAxes::ROTATION_LOCKED);
                     // .insert(GravityScale(0.0))
                     tiles.push(tile);
-                    shapes.push((Vec2::new(position.x, position.y), 0.0, Collider::round_cuboid(0.01, 0.01, 0.4)));
+                    shapes.push((
+                        Vec2::new(position.x, position.y),
+                        0.0,
+                        Collider::round_cuboid(0.01, 0.01, 0.4),
+                    ));
                 }
             }
         }
     }
-    
+
     commands
         .spawn()
         .insert(Name::new("Map"))

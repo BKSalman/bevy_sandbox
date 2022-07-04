@@ -2,15 +2,14 @@ use bevy::prelude::*;
 use bevy_inspector_egui::{Inspectable, RegisterInspectable};
 
 use super::items::{
-    ItemAndCount, 
-    // Pickupable, 
-    ItemType
+    ItemAndCount,
+    // Pickupable,
+    ItemType,
 };
 // use bevy_inspector_egui::{
 //     Inspectable,
 //     RegisterInspectable
 // };
-
 
 const INVENTORY_SIZE: usize = 5;
 
@@ -19,8 +18,7 @@ pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .register_inspectable::<Inventory>();
+        app.register_inspectable::<Inventory>();
     }
 }
 
@@ -28,7 +26,7 @@ pub struct InventoryOverflow(pub usize);
 
 #[derive(Component, Default, Inspectable, Clone)]
 pub struct Inventory {
-    pub items: [ItemAndCount; INVENTORY_SIZE]
+    pub items: [ItemAndCount; INVENTORY_SIZE],
 }
 
 impl Inventory {
@@ -67,6 +65,4 @@ impl Inventory {
         }
         Some(InventoryOverflow(remaining_amount))
     }
-        
 }
-

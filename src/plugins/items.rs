@@ -1,8 +1,5 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::{
-    Inspectable,
-    RegisterInspectable
-};
+use bevy_inspector_egui::{Inspectable, RegisterInspectable};
 use serde::Deserialize;
 
 use bevy_rapier2d::prelude::*;
@@ -12,7 +9,7 @@ use crate::{
     TILE_SIZE,
 };
 
-use super::{player::Player, inventory::{Inventory}};
+use super::{inventory::Inventory, player::Player};
 
 pub struct ItemsPlugin;
 
@@ -41,11 +38,10 @@ pub enum WorldObject {
 
 impl Plugin for ItemsPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_startup_system(spawn_test_objects)
-        .add_system(pickup_item)
-        .register_inspectable::<WorldObject>()
-        .register_inspectable::<Pickupable>();
+        app.add_startup_system(spawn_test_objects)
+            .add_system(pickup_item)
+            .register_inspectable::<WorldObject>()
+            .register_inspectable::<Pickupable>();
     }
 }
 
@@ -60,12 +56,13 @@ fn spawn_test_objects(mut commands: Commands, sprite: Res<SpriteSheet>) {
         15,
         Vec3::new(10.0 * TILE_SIZE, -10.0 * TILE_SIZE, 100.0),
     );
-    commands.entity(item)
-    .insert(Pickupable{
-        item: ItemType::Stick
-    })
-    .insert(Collider::cuboid(0.1, 0.1))
-    .insert(Sensor(true));
+    commands
+        .entity(item)
+        .insert(Pickupable {
+            item: ItemType::Stick,
+        })
+        .insert(Collider::cuboid(0.1, 0.1))
+        .insert(Sensor(true));
 
     children.push(item);
 
@@ -79,7 +76,7 @@ fn pickup_item(
     mut player_query: Query<(&Player, &mut Inventory, Entity)>,
     pickupable_query: Query<(&Pickupable, Entity), Without<Player>>,
     rapier_context: Res<RapierContext>,
-    keyboard: Res<Input<KeyCode>>
+    keyboard: Res<Input<KeyCode>>,
 ) {
     let (player, mut inventory, player_e) = player_query.single_mut();
     let (pickup, pickupable_e) = pickupable_query.single();

@@ -1,16 +1,13 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::plugins::player::{
-    Player
-};
+use crate::plugins::player::Player;
 
 pub struct EventsPlugin;
 
 impl Plugin for EventsPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_system(test_events);
+        app.add_system(test_events);
     }
 }
 
@@ -19,7 +16,7 @@ impl Plugin for EventsPlugin {
 fn test_events(
     player_query: Query<(Entity, &Player)>,
     // letters_query: Query<(Entity, &Letter)>,
-    rapier_context: Res<RapierContext>
+    rapier_context: Res<RapierContext>,
 ) {
     let (e, _) = player_query.single();
     // let Letters: Vec<Entity, &Letter> = letters_query.iter().collect();
@@ -33,5 +30,4 @@ fn test_events(
 
         println!("{:?}", other_collider);
     }
-
 }

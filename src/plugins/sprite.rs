@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::TILE_SIZE;
+use bevy::prelude::*;
 pub struct SpritePlugin;
 
 pub struct SpriteSheet(pub Handle<TextureAtlas>);
@@ -19,7 +19,6 @@ pub fn spawn_sprite(
     index: usize,
     translation: Vec3,
 ) -> Entity {
-
     let mut sprite1 = TextureAtlasSprite::new(index);
     sprite1.custom_size = Some(Vec2::splat(TILE_SIZE));
 
@@ -42,11 +41,13 @@ pub fn load_sprite(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let texture_handle = asset_server.load("sprite_sheet.png");
-    let texture_atlas = TextureAtlas::from_grid_with_padding(texture_handle,
+    let texture_atlas = TextureAtlas::from_grid_with_padding(
+        texture_handle,
         Vec2::splat(15.0),
         14,
         2,
-        Vec2::splat(2.));
+        Vec2::splat(2.),
+    );
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
     commands.insert_resource(SpriteSheet(texture_atlas_handle));
 }
