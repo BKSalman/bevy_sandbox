@@ -28,7 +28,7 @@ pub fn spawn_sprite(
             sprite: sprite1,
             texture_atlas: sprite.0.clone(),
             transform: Transform {
-                translation: translation,
+                translation,
                 ..Default::default()
             },
             ..Default::default()

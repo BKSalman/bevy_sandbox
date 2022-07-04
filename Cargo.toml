@@ -6,10 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = "0.7"
+bevy = {version = "0.7"}
 bevy-inspector-egui = "0.11"
 rand = "0.8.5"
 bevy_rapier2d = { version = "0.14.1", features = [ "simd-stable", "debug-render" ] }
+bevy_ecs_tilemap = {version = "0.6.0"}
+serde = {version = "1.0.138"}
 
 # [build]
 # rustc-wrapper = "C:/Users/Salman/.cargo/bin/sccache.exe"

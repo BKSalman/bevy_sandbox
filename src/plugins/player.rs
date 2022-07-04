@@ -8,11 +8,13 @@ use bevy_rapier2d::{
     // }
 };
 use crate::{
-    sprite::{SpriteSheet, spawn_sprite},
+    plugins::sprite::{SpriteSheet, spawn_sprite},
     TILE_SIZE,
     // letter_blocks::TileCollider,
 };
 use bevy_inspector_egui::Inspectable;
+
+use super::inventory::Inventory;
 
 pub struct PlayerPlugin;
 
@@ -110,16 +112,11 @@ pub fn spawn_player(mut commands: Commands, sprite: Res<SpriteSheet>) {
         })
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(0.05, 0.05))
-        .insert(GravityScale(0.0))
         .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(Ccd::enabled())
         .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Velocity {
-            linvel: Vec2::new(0.0,0.0),
-            ..Default::default()
-        });
+        .insert(Restitution::new(0.0))
+        .insert(Velocity::linear(Vec2::new(0.0, 0.0)))
+        .insert(Inventory::default());
 
 }
 
@@ -133,21 +130,3 @@ fn camera_follow(
     camera_transform.translation.x = player_transform.translation.x;
     camera_transform.translation.y = player_transform.translation.y;
 }
-
-// fn wall_collision_check(
-//     target_player_pos: Vec3,
-//     wall_query: &Query<&Transform, (With<TileCollider>, Without<Player>)>,
-// ) -> bool {
-//     for wall_transform in wall_query.iter() {
-//         let collision = collide(
-//             target_player_pos,
-//             Vec2::splat(TILE_SIZE * 0.9),
-//             wall_transform.translation,
-//             Vec2::splat(TILE_SIZE),
-//         );
-//         if collision.is_some() {
-//             return false;
-//         }
-//     }
-//     true
-// }

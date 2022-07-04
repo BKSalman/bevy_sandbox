@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
-use crate::{sprite::{SpriteSheet, spawn_sprite}, RESOLUTION, player::Player};
+use crate::{plugins::sprite::{SpriteSheet, spawn_sprite}, RESOLUTION, plugins::player::Player};
 
 #[derive(Component, Clone, Copy, Debug)]
 pub struct Letter;
@@ -58,8 +58,10 @@ pub fn spawn_letter_blocks(
                 ..Default::default()
             })
             .insert(LockedAxes::ROTATION_LOCKED)
+            // .insert(Collider::round_cuboid(0.01, 0.01, 0.4))
             .insert(Collider::cuboid(0.05, 0.05))
             .insert(Ccd::enabled())
+            .insert(Restitution::new(0.0))
             .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(GravityScale(0.0));
     }
