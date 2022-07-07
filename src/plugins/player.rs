@@ -1,13 +1,9 @@
-use crate::{
-    plugins::sprite::{spawn_sprite, SpriteSheet},
-    TILE_SIZE,
-    // letter_blocks::TileCollider,
-};
-use bevy::prelude::*;
+use crate::{plugins::assets::spawn_sprite, SpriteSheet};
+use bevy::{prelude::*, render::camera::Camera2d};
 use bevy_inspector_egui::Inspectable;
 use bevy_rapier2d::prelude::*;
 
-use super::inventory::Inventory;
+use super::{inventory::Inventory, GameState};
 
 pub struct PlayerPlugin;
 
@@ -30,7 +26,7 @@ impl Default for Player {
     fn default() -> Self {
         Self {
             direction: Direction::Right,
-            velocity: 3.0,
+            velocity: 2.0,
             is_moving: false,
         }
     }
@@ -38,10 +34,41 @@ impl Default for Player {
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_player)
-            .add_system(camera_follow.after("movement"))
-            .add_system(player_movement.label("movement"));
+        app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(spawn_player))
+            .add_system_set(
+                SystemSet::on_update(GameState::Playing)
+                    .with_system(player_movement.label("movement"))
+                    .with_system(camera_follow.after("movement")),
+            );
     }
+}
+
+fn spawn_player(mut commands: Commands, sprite: Res<SpriteSheet>) {
+    let player = spawn_sprite(
+        &mut commands,
+        sprite.sprite_sheet.clone(),
+        0,
+        Vec3::new(0.0, -0.0, 900.0),
+    );
+
+    commands
+        .entity(player)
+        .insert(Name::new("Player"))
+        .insert(Player {
+            velocity: 1.0,
+            ..Default::default()
+        })
+        .insert(Transform {
+            translation: Vec3::new(0.1, -0.1, 900.0),
+            ..Default::default()
+        })
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::cuboid(0.05, 0.05))
+        .insert(LockedAxes::ROTATION_LOCKED)
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(Restitution::new(0.0))
+        .insert(Velocity::linear(Vec2::new(0.0, 0.0)))
+        .insert(Inventory::default());
 }
 
 fn player_movement(
@@ -94,41 +121,13 @@ fn player_movement(
     }
 }
 
-pub fn spawn_player(mut commands: Commands, sprite: Res<SpriteSheet>) {
-    let player = spawn_sprite(
-        &mut commands,
-        &sprite,
-        0,
-        Vec3::new(0.0 * TILE_SIZE, -0.0 * TILE_SIZE, 900.0),
-    );
-
-    commands
-        .entity(player)
-        .insert(Name::new("Player"))
-        .insert(Player {
-            velocity: 1.0,
-            ..Default::default()
-        })
-        .insert(Transform {
-            translation: Vec3::new(0.1, -0.1, 900.0),
-            ..Default::default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(0.05, 0.05))
-        .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Restitution::new(0.0))
-        .insert(Velocity::linear(Vec2::new(0.0, 0.0)))
-        .insert(Inventory::default());
-}
-
 fn camera_follow(
     player_query: Query<&Transform, With<Player>>,
-    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
+    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera2d>)>,
 ) {
-    let player_transform = player_query.single();
+    let player_transform = player_query.single().translation;
     let mut camera_transform = camera_query.single_mut();
 
-    camera_transform.translation.x = player_transform.translation.x;
-    camera_transform.translation.y = player_transform.translation.y;
+    camera_transform.translation.x = player_transform.x;
+    camera_transform.translation.y = player_transform.y;
 }

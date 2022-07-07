@@ -5,7 +5,7 @@ use serde::Deserialize;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    plugins::sprite::{spawn_sprite, SpriteSheet},
+    plugins::assets::{spawn_sprite, Graphics},
     TILE_SIZE,
 };
 
@@ -47,12 +47,12 @@ impl Plugin for ItemsPlugin {
 
 /// Creates our testing map
 #[allow(clippy::vec_init_then_push)]
-fn spawn_test_objects(mut commands: Commands, sprite: Res<SpriteSheet>) {
+fn spawn_test_objects(mut commands: Commands, sprite: Res<Graphics>) {
     let mut children = Vec::new();
 
     let item = spawn_sprite(
         &mut commands,
-        &sprite,
+        sprite.texture_atlas.clone(),
         15,
         Vec3::new(10.0 * TILE_SIZE, -10.0 * TILE_SIZE, 100.0),
     );
@@ -78,17 +78,17 @@ fn pickup_item(
     rapier_context: Res<RapierContext>,
     keyboard: Res<Input<KeyCode>>,
 ) {
-    let (player, mut inventory, player_e) = player_query.single_mut();
+    let (_player, mut inventory, player_e) = player_query.single_mut();
     let (pickup, pickupable_e) = pickupable_query.single();
-    if keyboard.just_pressed(KeyCode::Space) {
-        if rapier_context.intersection_pair(player_e, pickupable_e) == Some(true) {
-            let pickup_and_count = ItemAndCount {
-                item: pickup.item,
-                count: 1,
-            };
-            inventory.add(&pickup_and_count);
-            // println!("The entities {:?} and {:?} have intersecting colliders!", player_e, pickupable_e);
-        }
+    if keyboard.just_pressed(KeyCode::Space)
+        && rapier_context.intersection_pair(player_e, pickupable_e) == Some(true)
+    {
+        let pickup_and_count = ItemAndCount {
+            item: pickup.item,
+            count: 1,
+        };
+        inventory.add(&pickup_and_count);
+        // println!("The entities {:?} and {:?} have intersecting colliders!", player_e, pickupable_e);
     }
 }
 
