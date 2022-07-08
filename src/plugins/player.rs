@@ -1,5 +1,5 @@
 use crate::{plugins::assets::spawn_sprite, SpriteSheet};
-use bevy::{prelude::*, render::camera::Camera2d};
+use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
 use bevy_rapier2d::prelude::*;
 
@@ -34,12 +34,12 @@ impl Default for Player {
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(spawn_player))
-            .add_system_set(
-                SystemSet::on_update(GameState::Playing)
-                    .with_system(player_movement.label("movement"))
-                    .with_system(camera_follow.after("movement")),
-            );
+        app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(spawn_player));
+            // .add_system_set(
+            //     SystemSet::on_update(GameState::Playing)
+            //         .with_system(camera_follow.after("movement"))
+            //         .with_system(player_movement.label("movement"))
+            // );
     }
 }
 
@@ -123,7 +123,7 @@ fn player_movement(
 
 fn camera_follow(
     player_query: Query<&Transform, With<Player>>,
-    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera2d>)>,
+    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
 ) {
     let player_transform = player_query.single().translation;
     let mut camera_transform = camera_query.single_mut();

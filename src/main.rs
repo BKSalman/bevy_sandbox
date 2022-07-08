@@ -1,14 +1,20 @@
 // use std::env;
-use bevy::{prelude::*, render::camera::ScalingMode, window::PresentMode};
+use bevy::{
+    prelude::*, 
+    render::camera::ScalingMode, 
+    window::PresentMode
+};
 use bevy_asset_loader::*;
-// use bevy_ecs_ldtk::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
+
 
 mod plugins;
 
 use plugins::assets::{GameAssetsPlugin, SpriteSheet};
 use plugins::debug::DebugPlugin;
-use plugins::letter_blocks::LettersPlugin;
+use plugins::tile_map::{TileMapPlugin, WallBundle};
+// use plugins::letter_blocks::LettersPlugin;
 use plugins::player::PlayerPlugin;
 use plugins::GameState;
 
@@ -38,39 +44,47 @@ fn main() {
             resizable: false,
             ..Default::default()
         })
+        .insert_resource(LevelSelection::Index(0))
+        // .insert_resource(LdtkSettings {
+        //     level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
+        //         load_level_neighbors: true,
+        //     },
+        //     set_clear_color: SetClearColor::FromLevelBackground,
+        //     ..Default::default()
+        // })
         .add_plugins(DefaultPlugins)
         .add_plugin(GameAssetsPlugin)
         .add_plugin(DebugPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(0.1))
-        // .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(PlayerPlugin)
-        // .add_plugin(LdtkPlugin)
-        // .insert_resource(LevelSelection::Index(0))
+        // .add_plugin(LettersPlugin)
+        .add_plugin(LdtkPlugin)
         // .add_plugin(InventoryPlugin)
         // .add_plugin(ItemsPlugin)
-        .add_plugin(LettersPlugin)
         // .add_plugin(EventsPlugin)
-        // .add_plugin(TileMapPlugin)
+        .register_ldtk_int_cell::<WallBundle>(1)
+        .register_ldtk_int_cell::<WallBundle>(3)
+        .add_plugin(TileMapPlugin)
         .insert_resource(RapierConfiguration {
             gravity: Vec2::ZERO,
             ..Default::default()
         })
-        // .add_startup_system(spawn_camera)
         .run();
 }
 
-pub fn spawn_camera(mut commands: Commands) {
+fn spawn_camera(mut commands: Commands) {
     let mut camera = OrthographicCameraBundle::new_2d();
 
-    // Set the camera to have normalized coordinates of y values -1 to 1
-    camera.orthographic_projection.top = 1.;
-    camera.orthographic_projection.bottom = -1.;
+    // // Set the camera to have normalized coordinates of y values -1 to 1
+    // camera.orthographic_projection.top = 1.;
+    // camera.orthographic_projection.bottom = -1.;
 
-    camera.orthographic_projection.right = camera.orthographic_projection.top * RESOLUTION;
-    camera.orthographic_projection.left = camera.orthographic_projection.bottom * RESOLUTION;
+    // camera.orthographic_projection.right = camera.orthographic_projection.top * RESOLUTION;
+    // camera.orthographic_projection.left = camera.orthographic_projection.bottom * RESOLUTION;
 
-    //Force the camera to use our settings
-    camera.orthographic_projection.scaling_mode = ScalingMode::None;
+    // //Force the camera to use our settings
+    // camera.orthographic_projection.scaling_mode = ScalingMode::None;
 
     commands.spawn_bundle(camera);
 }

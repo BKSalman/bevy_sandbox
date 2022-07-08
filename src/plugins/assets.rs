@@ -43,7 +43,7 @@ pub fn spawn_sprite(
     translation: Vec3,
 ) -> Entity {
     let mut sprite_index = TextureAtlasSprite::new(index);
-    sprite_index.custom_size = Some(Vec2::splat(TILE_SIZE));
+    // sprite_index.custom_size = Some(Vec2::splat(TILE_SIZE));
 
     commands
         .spawn_bundle(SpriteSheetBundle {
