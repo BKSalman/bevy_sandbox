@@ -36,9 +36,9 @@ pub struct WallBundle {
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App) {
         app
-        // .add_system(camera_fit_inside_current_level)
-        .add_system(spawn_wall_collision);
-        // .add_system(update_level_selection);
+        .add_system(camera_fit_inside_current_level)
+        .add_system(spawn_wall_collision)
+        .add_system(update_level_selection);
     }
 }
 
@@ -266,35 +266,37 @@ pub fn spawn_wall_collision(
 
                 // spawn colliders for every rectangle
                 for wall_rect in wall_rects {
-                    println!("{}",((wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32 / 2.));
                     commands
-                        .spawn()
-                        .insert(Collider::cuboid(
-                            (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
-                                * grid_size as f32
-                                / 2.,
-                            (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
-                                * grid_size as f32
-                                / 2.,
-                        ))
-                        .insert(RigidBody::Fixed)
-                        .insert(Friction{
-                            coefficient: 0.1,
-                            combine_rule:
-                                CoefficientCombineRule::Min,
-                        })
-                        .insert(Transform::from_xyz(
-                            (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32 / 2.,
-                            (wall_rect.bottom + wall_rect.top + 1) as f32 * grid_size as f32 / 2.,
-                            0.,
-                        ))
-                        .insert(GlobalTransform::default())
-                        .insert(Name::new("Wall Collision"))
-                        .insert(GravityScale(0.))
-                        // Making the collider a child of the level serves two purposes:
-                        // 1. Adjusts the transforms to be relative to the level for free
-                        // 2. the colliders will be despawned automatically when levels unload
-                        .insert(Parent(level_entity));
+                        .entity(level_entity).with_children(|builder| {
+                            builder
+                            .spawn().insert(Collider::cuboid(
+                                (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
+                                    * grid_size as f32
+                                    / 2.,
+                                (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
+                                    * grid_size as f32
+                                    / 2.,
+                            ))
+                            .insert(RigidBody::Fixed)
+                            .insert(Friction{
+                                coefficient: 0.1,
+                                combine_rule:
+                                    CoefficientCombineRule::Min,
+                            })
+                            .insert(Transform::from_xyz(
+                                (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32 / 2.,
+                                (wall_rect.bottom + wall_rect.top + 1) as f32 * grid_size as f32 / 2.,
+                                0.,
+                            ))
+                            .insert(GlobalTransform::default())
+                            .insert(Name::new("Wall Collision"))
+                            .insert(GravityScale(0.))
+                            // Making the collider a child of the level serves two purposes:
+                            // 1. Adjusts the transforms to be relative to the level for free
+                            // 2. the colliders will be despawned automatically when levels unload
+                            .insert(Parent(level_entity));
+                        });
+                        
                 }
             }
         });

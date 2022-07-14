@@ -1568,7 +1568,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "Player",
-							"__grid": [12,12],
+							"__grid": [9,12],
 							"__pivot": [0.5,1],
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 96, "y": 2720, "w": 32, "h": 32 },
@@ -1577,7 +1577,7 @@
 							"width": 24,
 							"height": 24,
 							"defUid": 46,
-							"px": [200,208],
+							"px": [152,208],
 							"fieldInstances": [{ "__identifier": "items", "__value": [ "Knife", "Boots" ], "__type": "Array<LocalEnum.Item>", "__tile": null, "defUid": 51, "realEditorValues": [ {
 								"id": "V_String",
 								"params": ["Knife"]
