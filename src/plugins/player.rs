@@ -1,24 +1,26 @@
-use crate::{plugins::assets::spawn_sprite, SpriteSheet};
+use crate::{plugins::assets::spawn_sprite, Assets};
 use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
 use bevy_inspector_egui::Inspectable;
 use bevy_rapier2d::prelude::*;
 
-use super::{inventory::Inventory, GameState};
+use super::{GameState, ColliderBundle, assets::MyAssets};
 
 pub struct PlayerPlugin;
 
-#[derive(Component, Inspectable)]
+#[derive(Copy, Clone, PartialEq, Debug, Component, Inspectable)]
 pub struct Player {
     direction: Direction,
     velocity: f32,
     is_moving: bool,
 }
 
-#[derive(Inspectable, Clone, Copy)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Inspectable, Default)]
 enum Direction {
     Up,
     Down,
     Left,
+    #[default]
     Right,
 }
 
@@ -26,24 +28,40 @@ impl Default for Player {
     fn default() -> Self {
         Self {
             direction: Direction::Right,
-            velocity: 2.0,
+            velocity: 200.0,
             is_moving: false,
         }
     }
 }
 
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+pub struct PlayerBundle {
+    #[sprite_bundle("player.png")]
+    #[bundle]
+    pub sprite_bundle: SpriteBundle,
+    #[from_entity_instance]
+    #[bundle]
+    pub collider_bundle: ColliderBundle,
+    pub player: Player,
+    #[worldly]
+    pub worldly: Worldly,
+
+    // The whole EntityInstance can be stored directly as an EntityInstance component
+    #[from_entity_instance]
+    pub entity_instance: EntityInstance,
+}
+
+
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(spawn_player));
-            // .add_system_set(
-            //     SystemSet::on_update(GameState::Playing)
-            //         .with_system(camera_follow.after("movement"))
-            //         .with_system(player_movement.label("movement"))
-            // );
+        // app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(spawn_player));
+            app
+            // .add_system(camera_follow.after("movement"))
+            .add_system(player_movement.label("movement"));
     }
 }
 
-fn spawn_player(mut commands: Commands, sprite: Res<SpriteSheet>) {
+fn _spawn_player(mut commands: Commands, sprite: Res<MyAssets>) {
     let player = spawn_sprite(
         &mut commands,
         sprite.sprite_sheet.clone(),
@@ -65,10 +83,8 @@ fn spawn_player(mut commands: Commands, sprite: Res<SpriteSheet>) {
         .insert(RigidBody::Dynamic)
         .insert(Collider::cuboid(0.05, 0.05))
         .insert(LockedAxes::ROTATION_LOCKED)
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Restitution::new(0.0))
-        .insert(Velocity::linear(Vec2::new(0.0, 0.0)))
-        .insert(Inventory::default());
+        .insert(Velocity::linear(Vec2::new(0., 0.)));
+        // .insert(Inventory::default());
 }
 
 fn player_movement(

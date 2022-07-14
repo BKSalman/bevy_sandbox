@@ -1,13 +1,13 @@
 // use crate::TILE_SIZE;
 use bevy::prelude::*;
 use bevy_asset_loader::*;
-
+use bevy_ecs_ldtk::LdtkAsset;
 use crate::TILE_SIZE;
 
 pub struct GameAssetsPlugin;
 
 #[derive(AssetCollection)]
-pub struct SpriteSheet {
+pub struct MyAssets {
     #[asset(texture_atlas(
         tile_size_x = 15.,
         tile_size_y = 15.,

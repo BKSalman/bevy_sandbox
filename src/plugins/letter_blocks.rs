@@ -1,14 +1,14 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
+use heron::prelude::*;
 use rand::prelude::*;
 
 use crate::{
-    plugins::assets::{spawn_sprite, SpriteSheet},
+    plugins::assets::{spawn_sprite},
     plugins::player::Player,
     RESOLUTION,
 };
 
-use super::GameState;
+use super::{GameState, assets::MyAssets};
 
 #[derive(Component, Clone, Copy, Debug)]
 pub struct Letter;
@@ -41,7 +41,7 @@ enum ArabicLetters {
 pub fn spawn_letter_blocks(
     mut commands: Commands,
     player_query: Query<&Transform, With<Player>>,
-    sprite: Res<SpriteSheet>,
+    sprite: Res<MyAssets>,
     keyboard: Res<Input<KeyCode>>,
 ) {
     let transform = player_query.single();
@@ -64,15 +64,14 @@ pub fn spawn_letter_blocks(
             .insert(Letter)
             .insert(RigidBody::Dynamic)
             .insert(Damping {
-                linear_damping: 50.0,
+                linear: 50.0,
                 ..Default::default()
             })
-            .insert(LockedAxes::ROTATION_LOCKED)
+            .insert(RotationConstraints::lock())
             // .insert(Collider::round_cuboid(0.01, 0.01, 0.4))
-            .insert(Collider::cuboid(0.05, 0.05))
-            .insert(Ccd::enabled())
-            .insert(Restitution::new(0.0))
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(GravityScale(0.0));
+            .insert(CollisionShape::Cuboid{
+                half_extends: Vec3::new(0.05, 0.05, 0.),
+                border_radius: Some(3.)
+            });
     }
 }

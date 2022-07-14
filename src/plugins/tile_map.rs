@@ -1,9 +1,10 @@
 use bevy::{prelude::*, utils::{HashMap, HashSet}};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_asset_loader::*;
 use std::{
     fs::File,
-    io::{BufRead, BufReader}, borrow::Borrow,
+    io::{BufRead, BufReader},
 };
 
 // use bevy_ecs_tilemap::prelude::*;
@@ -11,11 +12,18 @@ use std::{
 use crate::{
     plugins::assets::{spawn_sprite, Graphics},
     TILE_SIZE,
+    RESOLUTION
 };
 
-use super::GameState;
+use super::{GameState, player::Player};
 
 pub struct TileMapPlugin;
+
+#[derive(AssetCollection)]
+pub struct Map {
+    #[asset(path = "Typical_2D_platformer_example.ldtk")]
+    pub map: Handle<LdtkAsset>,
+}
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Wall;
@@ -27,14 +35,10 @@ pub struct WallBundle {
 
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App) {
-        // app.add_startup_system(create_simple_map);
         app
-        .add_system_set(SystemSet::on_enter(GameState::Playing)
-            .with_system(_create_map)
-        )
-        .add_system_set(SystemSet::on_update(GameState::Playing)
-            .with_system(spawn_wall_collision)
-        );
+        // .add_system(camera_fit_inside_current_level)
+        .add_system(spawn_wall_collision);
+        // .add_system(update_level_selection);
     }
 }
 
@@ -59,7 +63,7 @@ fn _create_simple_map(mut commands: Commands, sprite: Res<Graphics>) {
                     shapes.push((
                         Vec2::new(position.x, position.y),
                         0.0,
-                        Collider::round_cuboid(0.01, 0.01, 0.4),
+                        Collider::round_cuboid(0.01, 0.01, 0.1),
                     ));
                 }
             }
@@ -75,14 +79,68 @@ fn _create_simple_map(mut commands: Commands, sprite: Res<Graphics>) {
         .push_children(&tiles);
 }
 
-fn _create_map(mut commands: Commands, asset_server: Res<AssetServer>) {
-    asset_server.watch_for_changes().unwrap();
+pub fn camera_fit_inside_current_level(
+    mut camera_query: Query<
+        (
+            &mut bevy::render::camera::OrthographicProjection,
+            &mut Transform,
+        ),
+        Without<Player>,
+    >,
+    player_query: Query<&Transform, With<Player>>,
+    level_query: Query<
+        (&Transform, &Handle<LdtkLevel>),
+        (Without<OrthographicProjection>, Without<Player>),
+    >,
+    level_selection: Res<LevelSelection>,
+    ldtk_levels: Res<Assets<LdtkLevel>>,
+) {
+    if let Ok(Transform {
+        translation: player_translation,
+        ..
+    }) = player_query.get_single()
+    {
+        let player_translation = *player_translation;
 
-    commands.spawn_bundle(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("Typical_2D_platformer_example.ldtk"),
-        // transform: Transform::from_xyz(0.0, 0.0, 400.0),
-        ..Default::default()
-    });
+        let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
+
+        for (level_transform, level_handle) in level_query.iter() {
+            if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
+                let level = &ldtk_level.level;
+                if level_selection.is_match(&0, level) {
+                    let level_ratio = level.px_wid as f32 / ldtk_level.level.px_hei as f32;
+
+                    orthographic_projection.scaling_mode = bevy::render::camera::ScalingMode::None;
+                    orthographic_projection.bottom = 0.;
+                    orthographic_projection.left = 0.;
+                    if level_ratio > RESOLUTION {
+                        // level is wider than the screen
+                        orthographic_projection.top = (level.px_hei as f32 / 9.).round() * 9.;
+                        orthographic_projection.right = orthographic_projection.top * RESOLUTION;
+                        camera_transform.translation.x = (player_translation.x
+                            - level_transform.translation.x
+                            - orthographic_projection.right / 2.)
+                            .clamp(0., level.px_wid as f32 - orthographic_projection.right);
+                        camera_transform.translation.y = 0.;
+                    } else {
+                        // level is taller than the screen
+                        orthographic_projection.right = (level.px_wid as f32 / 16.).round() * 16.;
+                        orthographic_projection.top = orthographic_projection.right / RESOLUTION;
+                        camera_transform.translation.y = (player_translation.y
+                            - level_transform.translation.y
+                            - orthographic_projection.top / 2.)
+                            .clamp(0., level.px_hei as f32 - orthographic_projection.top);
+                        camera_transform.translation.x = 0.;
+                    }
+
+                    camera_transform.translation.x += level_transform.translation.x;
+                    camera_transform.translation.y += level_transform.translation.y;
+                }
+            }
+        }
+    } else {
+        dbg!("couldn't find player");
+    }
 }
 
 pub fn spawn_wall_collision(
@@ -94,26 +152,35 @@ pub fn spawn_wall_collision(
 ) {
     /// Represents a wide wall that is 1 tile tall
     /// Used to spawn wall collisions
-    #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
+    #[derive(
+        Copy, Clone, Eq, PartialEq, Debug, Default, Hash,
+    )]
     struct Plate {
         left: i32,
         right: i32,
     }
+
     // consider where the walls are
     // storing them as GridCoords in a HashSet for quick, easy lookup
-    let mut level_to_wall_locations: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
+    let mut level_to_wall_locations: HashMap<
+        Entity,
+        HashSet<GridCoords>,
+    > = HashMap::new();
 
-
-    wall_query.for_each(|(&grid_coords, &Parent(parent))| {
-        // the intgrid tiles' direct parents will be bevy_ecs_tilemap chunks, not the level
-        // To get the level, you need their grandparents, which is where parent_query comes in
-        if let Ok(&Parent(level_entity)) = parent_query.get(parent) {
-            level_to_wall_locations
-                .entry(level_entity)
-                .or_insert(HashSet::new())
-                .insert(grid_coords);
-        }
-    });
+    wall_query.for_each(
+        |(&grid_coords, &Parent(parent))| {
+            // the intgrid tiles' direct parents will be bevy_ecs_tilemap chunks, not the level
+            // To get the level, you need their grandparents, which is where parent_query comes in
+            if let Ok(&Parent(level_entity)) =
+                parent_query.get(parent)
+            {
+                level_to_wall_locations
+                    .entry(level_entity)
+                    .or_insert(HashSet::new())
+                    .insert(grid_coords);
+            }
+        },
+    );
 
     if !wall_query.is_empty() {
         level_query.for_each(|(level_entity, level_handle)| {
@@ -132,7 +199,7 @@ pub fn spawn_wall_collision(
                     .layer_instances
                     .clone()
                     .expect("Level asset should have layers")[0];
-
+                    dbg!(width,height);
                 // combine wall tiles into flat "plates" in each individual row
                 let mut plate_stack: Vec<Vec<Plate>> = Vec::new();
 
@@ -179,6 +246,7 @@ pub fn spawn_wall_collision(
                                 },
                             );
                         } else {
+                            // dbg!(y, plate.left, plate.right);
                             current_rects.insert(
                                 *plate,
                                 Rect {
@@ -198,27 +266,31 @@ pub fn spawn_wall_collision(
 
                 // spawn colliders for every rectangle
                 for wall_rect in wall_rects {
-                    println!("left {} right {} top {} bottom {}", wall_rect.left, wall_rect.right, wall_rect.top, wall_rect.bottom);
+                    println!("{}",((wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32 / 2.));
                     commands
                         .spawn()
                         .insert(Collider::cuboid(
-                                (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
-                                    * grid_size as f32
-                                    / 2.,
-                                (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
-                                    * grid_size as f32
-                                    / 2.,
-                            )
-                        )
+                            (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
+                                * grid_size as f32
+                                / 2.,
+                            (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
+                                * grid_size as f32
+                                / 2.,
+                        ))
                         .insert(RigidBody::Fixed)
-                        .insert(Friction::coefficient(0.1))
+                        .insert(Friction{
+                            coefficient: 0.1,
+                            combine_rule:
+                                CoefficientCombineRule::Min,
+                        })
                         .insert(Transform::from_xyz(
                             (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32 / 2.,
                             (wall_rect.bottom + wall_rect.top + 1) as f32 * grid_size as f32 / 2.,
                             0.,
                         ))
                         .insert(GlobalTransform::default())
-                        .insert(Name::new("Wall"))
+                        .insert(Name::new("Wall Collision"))
+                        .insert(GravityScale(0.))
                         // Making the collider a child of the level serves two purposes:
                         // 1. Adjusts the transforms to be relative to the level for free
                         // 2. the colliders will be despawned automatically when levels unload
@@ -226,5 +298,50 @@ pub fn spawn_wall_collision(
                 }
             }
         });
+    }
+}
+
+pub fn update_level_selection(
+    level_query: Query<
+        (&Handle<LdtkLevel>, &Transform),
+        Without<Player>,
+    >,
+    player_query: Query<&Transform, With<Player>>,
+    mut level_selection: ResMut<LevelSelection>,
+    ldtk_levels: Res<Assets<LdtkLevel>>,
+) {
+    for (level_handle, level_transform) in
+        level_query.iter()
+    {
+        if let Some(ldtk_level) =
+            ldtk_levels.get(level_handle)
+        {
+            let level_bounds = Rect {
+                bottom: level_transform.translation.y,
+                top: level_transform.translation.y
+                    + ldtk_level.level.px_hei as f32,
+                left: level_transform.translation.x,
+                right: level_transform.translation.x
+                    + ldtk_level.level.px_wid as f32,
+            };
+            for player_transform in player_query.iter() {
+                if player_transform.translation.x
+                    < level_bounds.right
+                    && player_transform.translation.x
+                        > level_bounds.left
+                    && player_transform.translation.y
+                        < level_bounds.top
+                    && player_transform.translation.y
+                        > level_bounds.bottom
+                // && !level_selection
+                //     .is_match(&0, &ldtk_level.level)
+                {
+                    // dbg!("level set");
+                    *level_selection = LevelSelection::Iid(
+                        ldtk_level.level.iid.clone(),
+                    );
+                }
+            }
+        }
     }
 }
